@@ -45,8 +45,8 @@ resolve: {
 There is an ongoing effort to fork the codsen repository to `baxterdax/codsen` with additional browser optimizations. Once these forked packages are published to npm (either under the same names or as scoped packages like `@baxterdax/html-crush`), the dependencies can be updated to use them.
 
 Related issues:
-- baxterdax/codsen#1 (html-crush browser support)
-- baxterdax/codsen#2 (email-comb browser support)
+- [baxterdax/codsen#1](https://github.com/baxterdax/codsen/issues/1) (html-crush browser support)
+- [baxterdax/codsen#2](https://github.com/baxterdax/codsen/issues/2) (email-comb browser support)
 
 To switch to forked packages once published, update `package.json` files:
 
@@ -143,4 +143,4 @@ If you encounter runtime errors in the browser:
 
 ## Contributing
 
-If you encounter browser compatibility issues or have improvements, please open an issue or pull request on the [mjml-crushed repository](https://github.com/baxterdax/mjml-crushed).
+If you encounter browser compatibility issues or have improvements, please open an issue or pull request on the mjml-crushed repository.
