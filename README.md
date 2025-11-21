@@ -180,6 +180,8 @@ var htmlOutput = mjml2html(`
 console.log(htmlOutput)
 ```
 
+> **Note**: The browser version includes browser-compatible builds of html-crush and email-comb for HTML minification and CSS optimization. See [BROWSER_COMPATIBILITY.md](BROWSER_COMPATIBILITY.md) for more details.
+
 ## API
 
 A free-to-use MJML API is available to make it easy to integrate MJML in your application. Head over [here](https://mjml.io/api) to learn more about the API.
