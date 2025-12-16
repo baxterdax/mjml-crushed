@@ -5,6 +5,23 @@ All notable changes to `mjml-crushed` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.18.0-crushed.1] - 2025-12-16
+
+### Changed
+- **Upstream sync**: Merged MJML v4.18.0 changes
+- Updated all package versions to 4.18.0
+- Updated documentation from upstream (community contributions, markdown formatting)
+
+### Fixed (from upstream)
+- `bugfix(mjml-wrapper)`: Fixed padding display issues (#3019)
+- `bugfix(mjml-wrapper)`: Fixed allowed attributes not inheriting (#3011)
+- `bugfix(docs)`: Fixed documentation markdown formatting
+
+### Maintained
+- All html-crush and email-comb minification features preserved
+- Security policies and contribution guidelines
+- Repository configuration and branch protection
+
 ## [4.17.0-crushed.1] - 2025-12-16
 
 ### Added

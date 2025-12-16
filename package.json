@@ -1,6 +1,6 @@
 {
   "name": "mjml-crushed",
-  "version": "4.17.0-crushed.1",
+  "version": "4.18.0-crushed.1",
   "description": "MJML with advanced minification via html-crush and email-comb",
   "author": "baxterdax",
   "private": true,
