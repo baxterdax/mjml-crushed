@@ -13,7 +13,8 @@ import {
 import path from 'path'
 import juice from 'juice'
 import { html as htmlBeautify } from 'js-beautify'
-import { minify as htmlMinify } from 'html-minifier'
+import { crush } from 'html-crush'
+import { comb } from 'email-comb'
 import { load } from 'cheerio'
 
 import MJMLParser from 'mjml-parser-xml'
@@ -111,6 +112,11 @@ export default function mjml2html(mjml, options = {}) {
     keepComments,
     minify = false,
     minifyOptions = {},
+    purgeCSS = false,
+    minifyLevel = 'safe',
+    verbose = false,
+    lineLengthLimit = 500,
+    ignoreCustomFragments = [/\{\%[\s\S]*?\%\}/g],
     ignoreIncludes = false,
     juiceOptions = {},
     juicePreserveTags = null,
@@ -416,13 +422,51 @@ export default function mjml2html(mjml, options = {}) {
       '"minify" option is deprecated in mjml-core and only available in mjml cli.',
     )
 
-    content = htmlMinify(content, {
-      collapseWhitespace: true,
-      minifyCSS: false,
-      caseSensitive: true,
-      removeEmptyAttributes: true,
-      ...minifyOptions,
-    })
+    // Backward compatibility mappings
+    const enablePurgeCSS = purgeCSS || minifyOptions.minifyCSS || false
+    const level = minifyLevel || (minifyOptions.minifyCSS ? 'aggressive' : 'safe')
+    const uglifyCSS = level === 'aggressive'
+    const removeHTMLComments = level === 'aggressive' ? 2 : 1
+    const collapseWhitespace = minifyOptions.collapseWhitespace !== false
+    const removeLineBreaks = minifyOptions.minifyCSS || collapseWhitespace
+    const whitelist = minifyOptions.whitelist || ['.ExternalClass', '#outlook', '[class*="module-"]']
+    const customLineLength = minifyOptions.lineLengthLimit || lineLengthLimit
+    const customFragments = minifyOptions.ignoreCustomFragments || ignoreCustomFragments
+
+    let cleanedHtml = content
+
+    // First, apply email-comb if enabled
+    if (enablePurgeCSS) {
+      const combOpts = {
+        uglify: uglifyCSS,
+        whitelist,
+        removeHTMLComments: removeHTMLComments === 2,
+        removeCSSComments: true,
+        doNotRemoveHTMLCommentsWhoseOpeningTagContains: ['[if', '[endif'],
+        backend: [],
+      }
+      const combResult = comb(content, combOpts)
+      cleanedHtml = combResult.result
+      if (verbose) {
+        console.log('Removed CSS:', combResult.deletedFromHead, combResult.deletedFromBody)
+        console.log('Comb Log:', combResult.log)
+      }
+    }
+
+    // Then apply html-crush
+    const crushOpts = {
+      removeLineBreaks,
+      removeIndentations: true,
+      removeHTMLComments,
+      removeCSSComments: true,
+      lineLengthLimit: customLineLength,
+      ignoreCustomFragments: customFragments,
+    }
+    const crushResult = crush(cleanedHtml, crushOpts)
+    content = crushResult.result
+    if (verbose) {
+      console.log('Crush Log:', crushResult.log)
+    }
   }
 
   return {

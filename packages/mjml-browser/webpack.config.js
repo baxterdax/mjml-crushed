@@ -37,6 +37,8 @@ module.exports = {
       'path': path.resolve(__dirname, 'browser-mocks/path'),
       'fs': path.resolve(__dirname, 'browser-mocks/fs'),
       'uglify-js': path.resolve(__dirname, 'browser-mocks/uglify-js'),
+      'html-crush': path.resolve(__dirname, 'browser-mocks/html-crush'),
+      'email-comb': path.resolve(__dirname, 'browser-mocks/email-comb'),
     },
   },
   module: {

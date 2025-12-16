@@ -124,11 +124,16 @@ These are the default options.
 ### Change minify options
 
 ```bash
-$> mjml input.mjml --config.minifyOptions='{"minifyCSS": true, "removeEmptyAttributes": false}'
+$> mjml input.mjml --config.minifyLevel aggressive --config.purgeCSS true --config.verbose true
 ```
 
-The defaults are "collapseWhitespace": true, "minifyCSS": false, "removeEmptyAttributes": true  
-See html-minifier documentation for more available options
+MJML uses html-crush and email-comb for minification:
+- `minifyLevel`: 'safe' (default) for basic minification, 'aggressive' for full stripping of line breaks and indentation
+- `purgeCSS`: Enable CSS purging to remove unused styles (uses email-comb)
+- `lineLengthLimit`: Limit line length to prevent client bugs (default: 500)
+- `verbose`: Enable verbose logging of minification stats
+
+See html-crush and email-comb documentation for more details
 
 ### Change juice options (library used for inlining mj-style css)
 

@@ -3,7 +3,8 @@ import yargs from 'yargs'
 import { flow, pick, isNil, negate, pickBy } from 'lodash/fp'
 import { isArray, isEmpty, map, get, omit } from 'lodash'
 import { html as htmlBeautify } from 'js-beautify'
-import { minify as htmlMinify } from 'html-minifier'
+import { crush } from 'html-crush'
+import { comb } from 'email-comb'
 
 import mjml2html, { components, initializeType } from 'mjml-core'
 import migrate from 'mjml-migrate'
@@ -26,13 +27,6 @@ const beautifyConfig = {
   max_preserve_newline: 0,
   preserve_newlines: false,
   end_with_newline: true,
-}
-
-const minifyConfig = {
-  collapseWhitespace: true,
-  minifyCSS: false,
-  caseSensitive: true,
-  removeEmptyAttributes: true,
 }
 
 export default async () => {
@@ -100,6 +94,27 @@ export default async () => {
         type: 'boolean',
         describe: 'Add no file comment to stdout',
       },
+      purgeCss: {
+        type: 'boolean',
+        describe: 'Enable CSS purging (removes unused styles)',
+      },
+      minifyLevel: {
+        type: 'string',
+        choices: ['safe', 'aggressive'],
+        describe: 'Minification level (safe for basic, aggressive for full stripping)',
+      },
+      lineLengthLimit: {
+        type: 'number',
+        describe: 'Limit line length to prevent client bugs (default: 500)',
+      },
+      ignoreCustomFragments: {
+        type: 'array',
+        describe: 'Regex patterns to ignore during minification (e.g., for templating)',
+      },
+      verbose: {
+        type: 'boolean',
+        describe: 'Enable verbose logging of minification stats',
+      },
     })
     .help()
     .version(`mjml-core: ${coreVersion}\nmjml-cli: ${cliVersion}`)
@@ -146,6 +161,11 @@ export default async () => {
     juiceOptions && { juiceOptions },
     juicePreserveTags && { juicePreserveTags },
     argv.c && argv.c.keepComments === 'false' && { keepComments: false },
+    argv.purgeCss !== undefined && { purgeCSS: argv.purgeCss },
+    argv.minifyLevel && { minifyLevel: argv.minifyLevel },
+    argv.lineLengthLimit !== undefined && { lineLengthLimit: argv.lineLengthLimit },
+    argv.ignoreCustomFragments && { ignoreCustomFragments: argv.ignoreCustomFragments },
+    argv.verbose !== undefined && { verbose: argv.verbose },
   )
 
   const inputArgs = pickArgs(['r', 'w', 'i', '_', 'm', 'v'])(argv)
@@ -197,7 +217,6 @@ export default async () => {
       watchFiles(inputFiles, {
         ...argv,
         config,
-        minifyConfig,
         beautifyConfig,
       })
       KEEP_OPEN = true
@@ -247,10 +266,29 @@ export default async () => {
             compiled.html = htmlBeautify(compiled.html, beautifyConfig)
           }
           if (minify) {
-            compiled.html = htmlMinify(compiled.html, {
-              ...minifyConfig,
-              ...config.minifyOptions,
+            // Apply email-comb first if purgeCSS is enabled
+            if (config.purgeCSS) {
+              const combResult = comb(compiled.html, {
+                whitelist: [],
+                removeHTMLComments: true,
+                removeCSSComments: true,
+              })
+              compiled.html = combResult.result
+            }
+            
+            // Then apply html-crush
+            const crushResult = crush(compiled.html, {
+              removeLineBreaks: config.minifyLevel === 'aggressive',
+              removeIndentations: config.minifyLevel === 'aggressive',
+              removeHTMLComments: true,
+              removeCSSComments: true,
+              lineLengthLimit: config.lineLengthLimit || 500,
             })
+            compiled.html = crushResult.result
+            
+            if (config.verbose) {
+              console.log('Minification stats:', crushResult.log) // eslint-disable-line no-console
+            }
           }
         }
       }

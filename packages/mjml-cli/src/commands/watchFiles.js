@@ -7,7 +7,8 @@ import mjml2html from 'mjml-core'
 import { flow, pickBy, flatMap, uniq, difference, remove } from 'lodash/fp'
 import { omit } from 'lodash'
 import { html as htmlBeautify } from 'js-beautify'
-import { minify as htmlMinify } from 'html-minifier'
+import { crush } from 'html-crush'
+import { comb } from 'email-comb'
 
 import readFile from './readFile'
 import makeOutputToFile from './outputToFile'
@@ -52,7 +53,7 @@ export default (input, options) => {
   const readAndCompile = flow(
     (file) => ({ file, content: readFile(file).mjml }),
     (args) => {
-      const { config, beautifyConfig, minifyConfig } = options
+      const { config, beautifyConfig } = options
       const beautify = config.beautify && config.beautify !== 'false'
       const minify = config.minify && config.minify !== 'false'
 
@@ -65,10 +66,29 @@ export default (input, options) => {
         compiled.html = htmlBeautify(compiled.html, beautifyConfig)
       }
       if (minify) {
-        compiled.html = htmlMinify(compiled.html, {
-          ...minifyConfig,
-          ...config.minifyOptions,
+        // Apply email-comb first if purgeCSS is enabled
+        if (config.purgeCSS) {
+          const combResult = comb(compiled.html, {
+            whitelist: [],
+            removeHTMLComments: true,
+            removeCSSComments: true,
+          })
+          compiled.html = combResult.result
+        }
+        
+        // Then apply html-crush
+        const crushResult = crush(compiled.html, {
+          removeLineBreaks: config.minifyLevel === 'aggressive',
+          removeIndentations: config.minifyLevel === 'aggressive',
+          removeHTMLComments: true,
+          removeCSSComments: true,
+          lineLengthLimit: config.lineLengthLimit || 500,
         })
+        compiled.html = crushResult.result
+        
+        if (config.verbose) {
+          console.log('Minification stats:', crushResult.log)
+        }
       }
 
       return {
