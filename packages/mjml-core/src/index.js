@@ -417,11 +417,6 @@ export default function mjml2html(mjml, options = {}) {
   }
 
   if (minify) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      '"minify" option is deprecated in mjml-core and only available in mjml cli.',
-    )
-
     // Backward compatibility mappings
     const enablePurgeCSS = purgeCSS || minifyOptions.minifyCSS || false
     const level = minifyLevel || (minifyOptions.minifyCSS ? 'aggressive' : 'safe')

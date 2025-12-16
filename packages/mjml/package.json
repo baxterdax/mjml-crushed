@@ -1,7 +1,8 @@
 {
-  "name": "mjml",
-  "description": "MJML: the only framework that makes responsive-email easy",
-  "version": "4.17.0",
+  "name": "mjml-crushed",
+  "description": "MJML with advanced minification via html-crush and email-comb",
+  "version": "4.17.0-crushed.1",
+  "author": "baxterdax",
   "main": "lib/index.js",
   "bin": {
     "mjml": "bin/mjml"
@@ -12,12 +13,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mjmlio/mjml.git",
+    "url": "git+https://github.com/baxterdax/mjml-crushed.git",
     "directory": "packages/mjml"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mjmlio/mjml/issues"
+    "url": "https://github.com/baxterdax/mjml-crushed/issues"
   },
   "homepage": "https://mjml.io",
   "scripts": {

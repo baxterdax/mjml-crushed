@@ -1,6 +1,21 @@
 {
-  "name": "mjml-master",
+  "name": "mjml-crushed",
+  "version": "4.17.0-crushed.1",
+  "description": "MJML with advanced minification via html-crush and email-comb",
+  "author": "baxterdax",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/baxterdax/mjml-crushed.git"
+  },
+  "keywords": [
+    "mjml",
+    "email",
+    "responsive",
+    "minification",
+    "html-crush",
+    "email-comb"
+  ],
   "scripts": {
     "build:watch": "lerna run build --parallel -- -- -w",
     "build": "lerna run build --parallel --ignore mjml-browser",

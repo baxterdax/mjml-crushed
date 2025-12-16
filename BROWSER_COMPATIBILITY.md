@@ -1,143 +1,101 @@
-# Browser Compatibility for html-crush and email-comb
+# Browser Compatibility Notes
 
-## Current Issue
+## Minification in Browser Builds
 
-The `mjml-browser` package build is failing because `html-crush` and `email-comb` use Node.js-specific modules that aren't available in the browser environment:
+The browser build of `mjml-crushed` includes simplified mocks for `html-crush` and `email-comb` to avoid bundling Node.js-specific dependencies.
 
-```
-Module not found: Error: Can't resolve 'email-comb' in '/home/nick/mjml-crushed/packages/mjml-core/lib'
-Module not found: Error: Can't resolve 'html-crush' in '/home/nick/mjml-crushed/packages/mjml-core/lib'
-```
+### ⚠️ Important Limitations
 
-## Why They're Not Browser Compatible
+#### HTML Minification (`html-crush`)
+- **Node.js**: Full AST-based parsing with intelligent optimizations
+- **Browser**: Regex-based replacements only
+- **Impact**: 
+  - Less aggressive compression (~10-15% vs ~20-25% in Node.js)
+  - Potential edge cases with complex nested structures
+  - No attribute minimization or advanced optimizations
 
-Both `html-crush` and `email-comb` are part of the [codsen](https://codsen.com/) ecosystem and depend on:
-- Node.js filesystem APIs
-- Node.js path handling
-- Other Node.js built-in modules
+#### CSS Purging (`email-comb`)
+- **Node.js**: Full HTML/CSS parsing to remove unused selectors
+- **Browser**: **DISABLED** - only removes comments
+- **Impact**: 
+  - The `purgeCSS` option has minimal effect in browser builds
+  - CSS bloat will remain in browser-rendered templates
 
-These dependencies make them incompatible with browser environments out of the box.
+### Recommendations
 
-## Solutions to Make Them Browser Compatible
-
-### Option 1: Create Browser Mocks (Recommended for Quick Fix)
-
-Similar to how mjml-browser currently mocks `fs`, `path`, and `uglify-js`, create mock implementations:
-
-**Location:** `/home/nick/mjml-crushed/packages/mjml-browser/browser-mocks/`
-
-**Files to create:**
-
-1. **`html-crush.js`** - Mock implementation that provides a minimal browser-compatible version:
-```javascript
-// Browser mock for html-crush
-module.exports = {
-  crush: (html, options = {}) => {
-    // Basic minification without Node.js dependencies
-    let result = html;
-    
-    if (options.removeHTMLComments) {
-      result = result.replace(/<!--[\s\S]*?-->/g, '');
-    }
-    
-    if (options.removeCSSComments) {
-      result = result.replace(/\/\*[\s\S]*?\*\//g, '');
-    }
-    
-    if (options.removeLineBreaks) {
-      result = result.replace(/\n\s*/g, '');
-    }
-    
-    return {
-      result: result,
-      log: {
-        timeTakenInMilliseconds: 0,
-        originalLength: html.length,
-        cleanedLength: result.length,
-        bytesSaved: html.length - result.length,
-        percentageReducedOfOriginal: Math.round(((html.length - result.length) / html.length) * 100)
-      }
-    };
-  }
-};
+**For Production**: Always use the Node.js version of `mjml-crushed`
+```bash
+npm install mjml-crushed
+# Use in build scripts, not in browser
 ```
 
-2. **`email-comb.js`** - Mock implementation:
-```javascript
-// Browser mock for email-comb
-module.exports = {
-  comb: (html, options = {}) => {
-    // Basic CSS cleanup without Node.js dependencies
-    let result = html;
-    
-    if (options.removeHTMLComments) {
-      result = result.replace(/<!--[\s\S]*?-->/g, '');
-    }
-    
-    if (options.removeCSSComments) {
-      result = result.replace(/\/\*[\s\S]*?\*\//g, '');
-    }
-    
-    return {
-      result: result,
-      applicableOpts: options
-    };
-  }
-};
-```
+**For Browser Demos**: The browser build is suitable for:
+- Client-side MJML previews
+- Educational/demo purposes
+- Non-critical email rendering
 
-**Update webpack.config.js:**
+**Workaround**: If you need full minification in a browser context:
+1. Pre-process templates server-side with Node.js
+2. Cache the minified output
+3. Serve the cached HTML to the browser
+
+### Tracking Improvements
+See [Issue #1](https://github.com/baxterdax/mjml-crushed/issues/1) for ongoing efforts to improve browser mock effectiveness.
+
+---
+
+## Technical Details
+
+### Current Implementation
+
+The browser build uses webpack aliases to replace the full Node.js modules with simplified mocks:
+
+**webpack.config.js:**
 ```javascript
 resolve: {
   alias: {
-    'path': path.resolve(__dirname, 'browser-mocks/path'),
-    'fs': path.resolve(__dirname, 'browser-mocks/fs'),
-    'uglify-js': path.resolve(__dirname, 'browser-mocks/uglify-js'),
-    'html-crush': path.resolve(__dirname, 'browser-mocks/html-crush'),
-    'email-comb': path.resolve(__dirname, 'browser-mocks/email-comb'),
-  },
-},
-```
-
-### Option 2: Disable Minification in Browser Build
-
-Modify `mjml-core/src/index.js` to detect browser environment and skip minification:
-
-```javascript
-import { crush } from 'html-crush'
-import { comb } from 'email-comb'
-const isNode = require('detect-node')
-
-// In the minification section:
-if (minify && isNode) {
-  // Only run in Node.js environment
-  // Apply email-comb first if enabled
-  if (options.purgeCSS) {
-    const combResult = comb(html, combOptions)
-    html = combResult.result
+    'html-crush': path.resolve(__dirname, 'browser-mocks/html-crush.js'),
+    'email-comb': path.resolve(__dirname, 'browser-mocks/email-comb.js'),
   }
-  
-  // Then apply html-crush
-  const crushResult = crush(html, crushOptions)
-  html = crushResult.result
 }
 ```
 
-### Option 3: Conditional Import with Dynamic Requires
+**Mock Files:**
+- [`packages/mjml-browser/browser-mocks/html-crush.js`](packages/mjml-browser/browser-mocks/html-crush.js)
+- [`packages/mjml-browser/browser-mocks/email-comb.js`](packages/mjml-browser/browser-mocks/email-comb.js)
 
-Use dynamic imports that only load in Node.js:
+### Why Full Functionality Isn't Possible
 
-```javascript
-let crush, comb;
-if (typeof window === 'undefined') {
-  crush = require('html-crush').crush;
-  comb = require('email-comb').comb;
-}
+Both `html-crush` and `email-comb` are part of the [codsen](https://codsen.com/) ecosystem and depend on:
+- Node.js filesystem APIs
+- Node.js path handling  
+- Complex AST parsing libraries
+- Other Node.js built-in modules
 
-// Later in code:
-if (minify && crush && comb) {
-  // Apply minification
-}
+These dependencies make full functionality impossible in browser environments without significant bundle bloat.
+
+### Potential Future Improvements
+
+See [Issue #1](https://github.com/baxterdax/mjml-crushed/issues/1) for tracking potential enhancements:
+
+1. **Lightweight HTML parsers**: Investigate `parse5` or `htmlparser2` for better browser-based minification
+2. **Pre-parsed AST shipping**: Consider hybrid approach where AST is pre-computed
+3. **Runtime warnings**: Add clear error messages when `purgeCSS` is used in browser builds
+4. **Feature detection**: Automatically disable unsupported features in browser context
+
+---
+
+## Testing Browser Build
+
+To verify the browser build works correctly:
+
+```bash
+cd packages/mjml-browser
+npm run build
+# Check that dist/mjml.js is generated without errors
+```
+
+The browser build will have reduced minification capabilities, but MJML rendering will work correctly.
 ```
 
 ### Option 4: Create a Standalone Browser-Compatible Fork

@@ -1,4 +1,17 @@
 // Browser mock for html-crush
+//
+// ⚠️ LIMITATION: This is a simplified, regex-based implementation for browser compatibility.
+// The full Node.js version uses AST parsing for safer, more intelligent minification.
+//
+// Known limitations:
+// - No AST-based tag analysis (may break on edge cases with complex nested structures)
+// - Cannot detect safe whitespace removal contexts
+// - No advanced optimizations (attribute minimization, etc.)
+//
+// For production: Use the Node.js version
+// For browser demos/previews: This mock provides basic functionality
+//
+// Track improvements: https://github.com/baxterdax/mjml-crushed/issues/1
 module.exports = {
   crush: (html, options = {}) => {
     // Basic minification without Node.js dependencies
