@@ -1,0 +1,27 @@
+# CODEOWNERS
+# These owners will be requested for review when someone opens a pull request.
+
+# Default owner for everything in the repo
+* @baxterdax
+
+# Core packages
+/packages/mjml-core/ @baxterdax
+/packages/mjml-cli/ @baxterdax
+
+# Browser build and mocks (critical for compatibility)
+/packages/mjml-browser/ @baxterdax
+/packages/mjml-browser/browser-mocks/ @baxterdax
+
+# Documentation
+/doc/ @baxterdax
+/README.md @baxterdax
+/BROWSER_COMPATIBILITY.md @baxterdax
+
+# Configuration files
+/package.json @baxterdax
+/lerna.json @baxterdax
+/.github/ @baxterdax
+
+# Security-related files
+/SECURITY.md @baxterdax
+/SECURITY_SETUP.md @baxterdax
