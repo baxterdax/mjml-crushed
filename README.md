@@ -1,8 +1,31 @@
 # mjml-crushed
 
+> **⚠️ PROJECT ARCHIVED - NO LONGER MAINTAINED**
+> 
+> This project is no longer actively maintained. The maintainer has moved to a simpler **Handlebars + Juice** solution for email templating in the MuTTE project.
+> 
+> **Why archived:**
+> - MJML proved too complex for the intended use case
+> - Simpler templating solutions (Handlebars + Juice) offer better maintainability
+> - The complexity-to-benefit ratio wasn't favorable for this specific project
+> 
+> **What this means:**
+> - No further updates or bug fixes will be made
+> - Security updates will not be applied
+> - Issues and PRs will not be reviewed
+> - Feel free to fork if you need html-crush integration with MJML
+> 
+> **Alternatives:**
+> - **Handlebars + Juice** - Simple, maintainable email templating
+> - **MJML official** - Use upstream MJML (note: still has html-minifier CVE)
+> - **Foundation for Emails** - Alternative responsive email framework
+> - **React Email** - Modern React-based email templates
+> 
+> ---
+
 [![Build Status](https://github.com/baxterdax/mjml-crushed/workflows/CI/badge.svg)](https://github.com/baxterdax/mjml-crushed/actions)
-[![npm version](https://img.shields.io/npm/v/mjml-crushed.svg)](https://www.npmjs.com/package/mjml-crushed)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
+[![Status: Archived](https://img.shields.io/badge/Status-Archived-red.svg)](https://github.com/baxterdax/mjml-crushed)
 
 > MJML with advanced minification and CSS purging via html-crush and email-comb
 
